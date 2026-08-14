@@ -4,21 +4,22 @@ project(etat_civil CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Avertissements utiles (equivalent de -Wall -Wextra -pedantic)
 if(NOT MSVC)
     add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
+include_directories(include)
+
 add_executable(etat_civil
-        main.cpp
-        Personne.cpp
-        Usager.cpp
-        AgentEtatCivil.cpp
-        OfficierEtatCivil.cpp
-        AgentStagiaire.cpp
-        CentreEtatCivil.cpp
-        ActeCivil.cpp
-        DemandeActe.cpp
-        DossierEtatCivil.cpp
-        GestionEtatCivil.cpp
+        src/main.cpp
+        src/Personne.cpp
+        src/Usager.cpp
+        src/AgentEtatCivil.cpp
+        src/OfficierEtatCivil.cpp
+        src/AgentStagiaire.cpp
+        src/CentreEtatCivil.cpp
+        src/ActeCivil.cpp
+        src/DemandeActe.cpp
+        src/DossierEtatCivil.cpp
+        src/GestionEtatCivil.cpp
 )

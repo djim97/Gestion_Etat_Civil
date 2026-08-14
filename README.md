@@ -55,7 +55,7 @@ l'agent : c'est le polymorphisme en action.
 
 ## Architecture
 
-Chaque classe est répartie sur un couple `.hpp` / `.cpp`.
+Chaque classe est répartie sur un couple `.hpp` (interface) / `.cpp` (implémentation).
 
 ```
 Personne (abstraite)
@@ -71,6 +71,22 @@ main.cpp          ← scénario de démonstration
 
 `GestionEtatCivil` joue le rôle de façade : elle possède les listes d'objets (composition)
 et fournit les méthodes d'ajout, de recherche et d'affichage.
+
+## Structure du dépôt
+
+```
+Gestion_Etat_Civil/
+├── CMakeLists.txt        # configuration de build
+├── README.md
+├── include/              # les en-têtes (.hpp)
+│   ├── Personne.hpp
+│   ├── Usager.hpp
+│   └── ...
+└── src/                  # les implémentations (.cpp)
+    ├── main.cpp
+    ├── Personne.cpp
+    └── ...
+```
 
 ## Prérequis
 
@@ -95,9 +111,11 @@ puis lancer la configuration `etat_civil`.
 ### Avec g++ directement
 
 ```bash
-g++ -std=c++17 -Wall -Wextra -pedantic -o etat_civil *.cpp
+g++ -std=c++17 -Wall -Wextra -pedantic -Iinclude src/*.cpp -o etat_civil
 ./etat_civil
 ```
+
+L'option `-Iinclude` indique au compilateur où trouver les en-têtes.
 
 Le programme est interactif : il demande quelques informations au clavier
 (nom de l'usager, choix du centre et de l'acte, agent traitant, etc.).
@@ -117,16 +135,6 @@ Une fois lancé, laissez-vous guider par les invites. Exemple de saisies :
 
 Le programme affiche ensuite la demande, le dossier finalisé, un résumé du système,
 puis une série de tests des opérateurs et de gestion d'erreurs.
-
-## Structure du dépôt
-
-```
-.
-├── *.hpp / *.cpp        # les classes du domaine
-├── main.cpp             # point d'entrée et scénario
-├── CMakeLists.txt       # configuration de build
-└── README.md
-```
 
 ## Auteur
 
