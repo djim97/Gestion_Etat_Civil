@@ -58,9 +58,12 @@ public:
     // Affiche chaque agent de maniere polymorphique.
     void afficherTousAgents() const;
 
+    const std::vector<std::shared_ptr<Usager>>&          usagers() const { return m_usagers; }
     const std::vector<std::shared_ptr<CentreEtatCivil>>& centres() const { return m_centres; }
     const std::vector<std::shared_ptr<ActeCivil>>&       actes()   const { return m_actes; }
     const std::vector<std::shared_ptr<AgentEtatCivil>>&  agents()  const { return m_agents; }
+    const std::vector<std::shared_ptr<DemandeActe>>&     demandes() const { return m_demandes; }
+    const std::vector<std::shared_ptr<DossierEtatCivil>>& dossiers() const { return m_dossiers; }
 
     // Operateurs
     // []  : retourne un usager par son id.

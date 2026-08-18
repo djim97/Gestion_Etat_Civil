@@ -105,12 +105,27 @@ std::shared_ptr<AgentEtatCivil> GestionEtatCivil::operator()(int id) const {
 }
 
 std::ostream& operator<<(std::ostream& os, const GestionEtatCivil& g) {
-    os << "########## " << g.m_nomInstitution << " ##########\n"
-       << "Usagers  : " << g.m_usagers.size()  << "\n"
-       << "Agents   : " << g.m_agents.size()   << "\n"
-       << "Centres  : " << g.m_centres.size()  << "\n"
-       << "Actes    : " << g.m_actes.size()    << "\n"
-       << "Demandes : " << g.m_demandes.size() << "\n"
-       << "Dossiers : " << g.m_dossiers.size();
+    const int L = 66;
+    const std::string barre(L - 2, '=');
+
+    // Nom de l'institution centre dans un encadre.
+    int inner = L - 2;
+    const std::string& nom = g.m_nomInstitution;
+    int esp = inner - static_cast<int>(nom.size());
+    if (esp < 0) esp = 0;
+    int gauche = esp / 2, droite = esp - gauche;
+
+    os << '+' << barre << "+\n"
+       << '|' << std::string(gauche, ' ') << nom << std::string(droite, ' ') << "|\n"
+       << '+' << barre << "+\n";
+
+    os << "   Usagers  : " << g.m_usagers.size()  << "\n"
+       << "   Agents   : " << g.m_agents.size()   << "\n"
+       << "   Centres  : " << g.m_centres.size()  << "\n"
+       << "   Actes    : " << g.m_actes.size()    << "\n"
+       << "   Demandes : " << g.m_demandes.size() << "\n"
+       << "   Dossiers : " << g.m_dossiers.size() << "\n";
+
+    os << '+' << barre << '+';
     return os;
 }
