@@ -181,13 +181,38 @@ int main() {
 
             // -------- 11-13. Creation d'une demande --------
             titre("CREATION D'UNE DEMANDE");
-            int idCentre, idActe, nbCopies;
-            invite("Id du centre choisi");  cin >> idCentre;
-            invite("Id de l'acte choisi");  cin >> idActe;
-            invite("Nombre de copies");     cin >> nbCopies;
 
-            auto centreChoisi = systeme.trouverCentre(idCentre);
-            auto acteChoisi   = systeme.trouverActe(idActe);
+            // Redemande l'id du centre tant qu'il ne correspond a aucun centre,
+            // au lieu de laisser l'exception interrompre tout le programme.
+            shared_ptr<CentreEtatCivil> centreChoisi;
+            bool centreTrouve = false;
+            while (!centreTrouve) {
+                int idCentre;
+                invite("Id du centre choisi"); cin >> idCentre;
+                try {
+                    centreChoisi = systeme.trouverCentre(idCentre);
+                    centreTrouve = true;
+                } catch (const exception& e) {
+                    cout << "  [Erreur] " << e.what() << " Reessayez.\n";
+                }
+            }
+
+            // Meme principe pour l'acte choisi.
+            shared_ptr<ActeCivil> acteChoisi;
+            bool acteTrouve = false;
+            while (!acteTrouve) {
+                int idActe;
+                invite("Id de l'acte choisi"); cin >> idActe;
+                try {
+                    acteChoisi = systeme.trouverActe(idActe);
+                    acteTrouve = true;
+                } catch (const exception& e) {
+                    cout << "  [Erreur] " << e.what() << " Reessayez.\n";
+                }
+            }
+
+            int nbCopies;
+            invite("Nombre de copies");     cin >> nbCopies;
 
             auto demande = make_shared<DemandeActe>(idDemandeCourant, usager, centreChoisi, acteChoisi, nbCopies);
             systeme.ajouterDemande(demande);
@@ -203,8 +228,17 @@ int main() {
             systeme.afficherTousAgents();          // affichage polymorphique
             cout << "\n";
             int idAgent;
-            invite("Id de l'agent traitant"); cin >> idAgent;
-            agentTraitant = systeme.trouverAgent(idAgent);
+            // Redemande tant que l'id ne correspond a aucun agent.
+            bool agentTrouve = false;
+            while (!agentTrouve) {
+                invite("Id de l'agent traitant"); cin >> idAgent;
+                try {
+                    agentTraitant = systeme.trouverAgent(idAgent);
+                    agentTrouve = true;
+                } catch (const exception& e) {
+                    cout << "  [Erreur] " << e.what() << " Reessayez.\n";
+                }
+            }
 
             demande->valider();
             demande->delivrer();
@@ -226,6 +260,88 @@ int main() {
             ++numeroUsager;
         }
 
+        // -------- Menu d'exploration : consulter les demandes/dossiers a la demande --------
+        bool explorer = true;
+        while (explorer) {
+            titre("EXPLORATION DES DONNEES");
+            cout << "  1. Voir les demandes faites par un usager\n";
+            cout << "  2. Voir les dossiers traites par un agent\n";
+            cout << "  3. Continuer vers le resume final\n";
+
+            int choixExploration = 0;
+            while (choixExploration < 1 || choixExploration > 3) {
+                invite("Votre choix (1-3)"); cin >> choixExploration;
+                if (choixExploration < 1 || choixExploration > 3)
+                    cout << "  Choix invalide, veuillez taper 1, 2 ou 3.\n";
+            }
+
+            if (choixExploration == 1) {
+                // ---- Demandes faites par un usager choisi ----
+                cout << "\n  Usagers enregistres :\n";
+                for (const auto& u : systeme.usagers()) cout << "   - " << *u << "\n";
+
+                shared_ptr<Usager> u;
+                bool trouve = false;
+                while (!trouve) {
+                    int idU;
+                    cout << "\n";
+                    invite("Id de l'usager"); cin >> idU;
+                    try {
+                        u = systeme.trouverUsager(idU);
+                        trouve = true;
+                    } catch (const exception& e) {
+                        cout << "  [Erreur] " << e.what() << " Reessayez.\n";
+                    }
+                }
+
+                cout << "\n  Demandes de " << u->prenom() << " " << u->nom()
+                     << " (#" << u->id() << ") :\n";
+                bool aucune = true;
+                for (const auto& d : systeme.demandes())
+                    if (d->usager()->id() == u->id()) {
+                        cout << "   - " << *d << "\n";
+                        aucune = false;
+                    }
+                if (aucune) cout << "   (aucune demande)\n";
+
+            } else if (choixExploration == 2) {
+                // ---- Dossiers traites par un agent choisi ----
+                cout << "\n  Agents enregistres :\n";
+                systeme.afficherTousAgents();
+
+                shared_ptr<AgentEtatCivil> a;
+                bool trouve = false;
+                while (!trouve) {
+                    int idA;
+                    cout << "\n";
+                    invite("Id de l'agent"); cin >> idA;
+                    try {
+                        a = systeme.trouverAgent(idA);
+                        trouve = true;
+                    } catch (const exception& e) {
+                        cout << "  [Erreur] " << e.what() << " Reessayez.\n";
+                    }
+                }
+
+                cout << "\n  Dossiers traites par " << a->prenom() << " " << a->nom()
+                     << " (#" << a->id() << ") :\n";
+                bool aucun = true;
+                double total = 0.0;
+                for (const auto& d : systeme.dossiers())
+                    if (d->agent()->id() == a->id()) {
+                        cout << "   - Dossier #" << d->id() << " (Demande #" << d->demande()->id()
+                             << ") -> " << (long long)d->calculerCoutTotal() << " FCFA\n";
+                        total += d->calculerCoutTotal();
+                        aucun = false;
+                    }
+                if (aucun) cout << "   (aucun dossier traite)\n";
+                else cout << "   => total genere : " << (long long)total << " FCFA\n";
+
+            } else {
+                explorer = false;
+            }
+        }
+
         // -------- 17. Acces via [] et () (sur le dernier usager/agent) --------
         titre("ACCES PAR OPERATEURS [] ET ()");
         auto usagerAcces = systeme[usager->id()];          // operateur []
@@ -236,6 +352,46 @@ int main() {
         // -------- 18. Resume complet --------
         titre("RESUME COMPLET DU SYSTEME");
         cout << systeme << "\n";
+
+        // -------- Demandes regroupees par usager --------
+        titre("DEMANDES PAR USAGER");
+        for (const auto& u : systeme.usagers()) {
+            cout << "  " << u->prenom() << " " << u->nom() << " (#" << u->id() << ") - "
+                 << u->nombreDemandes() << " demande(s) :\n";
+            for (const auto& d : systeme.demandes())
+                if (d->usager()->id() == u->id())
+                    cout << "   - " << *d << "\n";
+            cout << "\n";
+        }
+
+        // -------- Dossiers regroupes par agent (polymorphisme : calculerCoutTotal()
+        // appelle en interne l'agent->calculerPrime() reelle de chaque agent) --------
+        titre("DOSSIERS TRAITES PAR AGENT");
+        for (const auto& a : systeme.agents()) {
+            cout << "  " << a->prenom() << " " << a->nom() << " (#" << a->id() << ") :\n";
+            double totalGenere = 0.0;
+            int nbTraites = 0;
+            for (const auto& d : systeme.dossiers()) {
+                if (d->agent()->id() == a->id()) {
+                    cout << "   - Dossier #" << d->id() << " (Demande #" << d->demande()->id()
+                         << ") -> cout total : " << (long long)d->calculerCoutTotal() << " FCFA\n";
+                    totalGenere += d->calculerCoutTotal();
+                    ++nbTraites;
+                }
+            }
+            if (nbTraites == 0)
+                cout << "   (aucun dossier traite)\n";
+            else
+                cout << "   => " << nbTraites << " dossier(s), total genere : "
+                     << (long long)totalGenere << " FCFA\n";
+            cout << "\n";
+        }
+
+        // -------- Chiffre d'affaires total (tous agents, tous dossiers confondus) --------
+        titre("CHIFFRE D'AFFAIRES TOTAL");
+        double chiffreAffairesTotal = 0.0;
+        for (const auto& d : systeme.dossiers()) chiffreAffairesTotal += d->calculerCoutTotal();
+        cout << "  Chiffre d'affaires total : " << (long long)chiffreAffairesTotal << " FCFA\n";
 
         // ===================== TESTS DES OPERATEURS =====================
         titre("TESTS DES OPERATEURS DE COMPARAISON");
